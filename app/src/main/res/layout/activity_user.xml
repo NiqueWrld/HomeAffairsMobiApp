@@ -5,29 +5,22 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <Spinner
-        android:id="@+id/serviceSpinner"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/selectServiceButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Select Service"
-        android:layout_marginBottom="16dp" />
-
-    <Button
-        android:id="@+id/settingsButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Settings"
-        android:layout_marginBottom="16dp" />
-
     <Button
         android:id="@+id/signOutButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign Out" />
+
+    <Button
+        android:id="@+id/selectServiceButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Select Service" />
+
+    <Button
+        android:id="@+id/settingsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settings" />
+
 </LinearLayout>

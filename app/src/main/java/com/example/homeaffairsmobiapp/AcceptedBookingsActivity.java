@@ -5,16 +5,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.widget.Toast;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.firebase.firestore.Query;
 
-public class AcceptedBookingsActivity extends AppCompatActivity {
+public class AcceptedBookingsActivity extends AppCompatActivity implements BookingAdapter.OnBookingStatusChangeListener {
 
     private RecyclerView acceptedBookingsRecyclerView;
     private BookingAdapter bookingAdapter;
-    private List<Booking> acceptedBookingList;
     private FirebaseFirestore db;
 
     @Override
@@ -24,30 +22,37 @@ public class AcceptedBookingsActivity extends AppCompatActivity {
 
         acceptedBookingsRecyclerView = findViewById(R.id.acceptedBookingsRecyclerView);
         db = FirebaseFirestore.getInstance();
-        acceptedBookingList = new ArrayList<>();
-        bookingAdapter = new BookingAdapter(acceptedBookingList, this);
-
-        acceptedBookingsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        acceptedBookingsRecyclerView.setAdapter(bookingAdapter);
-
-        fetchAcceptedBookings();
+        setupRecyclerView();
     }
 
-    private void fetchAcceptedBookings() {
-        db.collection("bookings")
-                .whereEqualTo("status", "accepted")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        acceptedBookingList.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Booking booking = document.toObject(Booking.class);
-                            acceptedBookingList.add(booking);
-                        }
-                        bookingAdapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(AcceptedBookingsActivity.this, "Error fetching accepted bookings", Toast.LENGTH_SHORT).show();
-                    }
-                });
+    private void setupRecyclerView() {
+        Query query = db.collection("bookings")
+                .whereEqualTo("status", "accepted");
+
+        FirestoreRecyclerOptions<Booking> options = new FirestoreRecyclerOptions.Builder<Booking>()
+                .setQuery(query, Booking.class)
+                .build();
+
+        bookingAdapter = new BookingAdapter(options, this);
+        acceptedBookingsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        acceptedBookingsRecyclerView.setAdapter(bookingAdapter);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bookingAdapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        bookingAdapter.stopListening();
+    }
+
+    @Override
+    public void onBookingStatusChanged(Booking booking, String newStatus) {
+        // Handle status changes if needed
+        Toast.makeText(this, "Booking status changed to: " + newStatus, Toast.LENGTH_SHORT).show();
     }
 }

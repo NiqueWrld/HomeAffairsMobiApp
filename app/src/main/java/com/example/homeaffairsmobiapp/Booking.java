@@ -10,10 +10,13 @@ public class Booking implements Serializable {
     private String userName;
     private String userEmail;
     private String status;
+    private String userFirstName;
+    private String userLastName;
+
 
     public Booking() {}
 
-    public Booking(String bookingId, String userId, String service, String timeSlot, String userName, String userEmail) {
+    public Booking(String bookingId, String userId, String service, String timeSlot, String status, String userFirstName, String userLastName, String userEmail) {
         this.bookingId = bookingId;
         this.userId = userId;
         this.service = service;
@@ -21,6 +24,9 @@ public class Booking implements Serializable {
         this.userName = userName;
         this.userEmail = userEmail;
         this.status = status; // Add this line
+        this.userFirstName = userFirstName;
+        this.userLastName = userLastName;
+        this.userEmail = userEmail;
     }
 
     // Getters and setters for all fields
@@ -77,5 +83,13 @@ public class Booking implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+    public String getUserFirstName() { return userFirstName; }
+    public void setUserFirstName(String userFirstName) { this.userFirstName = userFirstName; }
+    public String getUserLastName() { return userLastName; }
+    public void setUserLastName(String userLastName) { this.userLastName = userLastName; }
+
+    public String getFullName() {
+        return userFirstName + " " + userLastName;
     }
 }

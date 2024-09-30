@@ -8,18 +8,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.firebase.firestore.Query;
 
-public class AdminActivity extends AppCompatActivity {
+public class AdminActivity extends AppCompatActivity implements BookingAdapter.OnBookingStatusChangeListener {
 
     private Button viewAppointmentsButton, viewAnalyticsButton, signOutButton;
     private RecyclerView bookingsRecyclerView;
     private BookingAdapter bookingAdapter;
-    private List<Booking> bookingList;
     private FirebaseFirestore db;
 
     @Override
@@ -33,13 +31,7 @@ public class AdminActivity extends AppCompatActivity {
         bookingsRecyclerView = findViewById(R.id.bookingsRecyclerView);
 
         db = FirebaseFirestore.getInstance();
-        bookingList = new ArrayList<>();
-        bookingAdapter = new BookingAdapter(bookingList, this);
-
-        bookingsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        bookingsRecyclerView.setAdapter(bookingAdapter);
-
-        fetchBookings();
+        setupRecyclerView();
 
         viewAppointmentsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,21 +60,59 @@ public class AdminActivity extends AppCompatActivity {
         });
     }
 
-    private void fetchBookings() {
-        db.collection("bookings")
-                .whereEqualTo("status", "pending")
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        bookingList.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Booking booking = document.toObject(Booking.class);
-                            bookingList.add(booking);
-                        }
-                        bookingAdapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(AdminActivity.this, "Error fetching bookings", Toast.LENGTH_SHORT).show();
-                    }
-                });
+    private void setupRecyclerView() {
+        Query query = db.collection("bookings")
+                .whereEqualTo("status", "pending");
+
+        FirestoreRecyclerOptions<Booking> options = new FirestoreRecyclerOptions.Builder<Booking>()
+                .setQuery(query, Booking.class)
+                .build();
+
+        bookingAdapter = new BookingAdapter(options, this);
+        bookingsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        bookingsRecyclerView.setAdapter(bookingAdapter);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bookingAdapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        bookingAdapter.stopListening();
+    }
+
+    @Override
+    public void onBookingStatusChanged(Booking booking, String newStatus) {
+        if (newStatus.equals("accepted")) {
+            sendConfirmationEmail(booking);
+            Intent intent = new Intent(AdminActivity.this, AcceptedBookingsActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    private void sendConfirmationEmail(Booking booking) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("message/rfc822");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{booking.getUserEmail()});
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Booking Confirmation");
+
+        String emailBody = "Dear " + booking.getFullName() + ",\n\n" +
+                "Your booking has been confirmed:\n" +
+                "Service: " + booking.getService() + "\n" +
+                "Time Slot: " + booking.getTimeSlot() + "\n" +
+                "Booking ID: " + booking.getBookingId() + "\n\n" +
+                "Thank you for using our service.";
+
+        intent.putExtra(Intent.EXTRA_TEXT, emailBody);
+
+        try {
+            startActivity(Intent.createChooser(intent, "Send mail..."));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(AdminActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+        }
     }
 }

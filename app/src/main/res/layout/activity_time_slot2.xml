@@ -6,20 +6,21 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/selectedServiceText"
+        android:id="@+id/titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Selected Service: "
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"/>
+        android:text="Select Time Slot"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/>
 
     <TextView
+        android:id="@+id/selectedServiceTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Select Time Slot:"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="16dp"/>
 
     <Spinner
         android:id="@+id/timeSlotSpinner"
@@ -27,18 +28,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"/>
 
-    <TextView
-        android:id="@+id/selectedTimeSlotText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Selected Time Slot: "
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"/>
-
     <Button
         android:id="@+id/confirmButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Confirm Booking"
-        android:layout_gravity="center"/>
+        android:text="Confirm Booking"/>
+
 </LinearLayout>

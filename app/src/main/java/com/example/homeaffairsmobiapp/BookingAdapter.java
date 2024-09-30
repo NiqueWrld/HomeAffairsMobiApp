@@ -1,45 +1,39 @@
 package com.example.homeaffairsmobiapp;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
-import java.util.List;
 
-public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
+public class BookingAdapter extends FirestoreRecyclerAdapter<Booking, BookingAdapter.BookingViewHolder> {
 
-    private List<Booking> bookings;
-    private Context context;
+    private OnBookingStatusChangeListener listener;
     private FirebaseFirestore db;
 
-    public BookingAdapter(List<Booking> bookings, Context context) {
-        this.bookings = bookings;
-        this.context = context;
+    public interface OnBookingStatusChangeListener {
+        void onBookingStatusChanged(Booking booking, String newStatus);
+    }
+
+    public BookingAdapter(@NonNull FirestoreRecyclerOptions<Booking> options, OnBookingStatusChangeListener listener) {
+        super(options);
+        this.listener = listener;
         this.db = FirebaseFirestore.getInstance();
     }
 
-    @NonNull
     @Override
-    public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_booking, parent, false);
-        return new BookingViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
-        Booking booking = bookings.get(position);
+    protected void onBindViewHolder(@NonNull BookingViewHolder holder, int position, @NonNull Booking booking) {
         holder.serviceName.setText("Service: " + booking.getService());
         holder.timeSlot.setText("Time Slot: " + booking.getTimeSlot());
-        holder.userId.setText("User ID: " + booking.getUserId());
-        holder.status.setText("Status: " + booking.getStatus()); // Display the status
+        holder.userName.setText("Name: " + booking.getFullName());
+        holder.userEmail.setText("Email: " + booking.getUserEmail());
+        holder.status.setText("Status: " + booking.getStatus());
 
-        // Only show accept/decline buttons if status is "pending"
         if ("pending".equalsIgnoreCase(booking.getStatus())) {
             holder.acceptButton.setVisibility(View.VISIBLE);
             holder.declineButton.setVisibility(View.VISIBLE);
@@ -52,35 +46,36 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         }
     }
 
+    @NonNull
+    @Override
+    public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_booking, parent, false);
+        return new BookingViewHolder(view);
+    }
+
     private void updateBookingStatus(Booking booking, String status) {
         db.collection("bookings").document(booking.getBookingId())
                 .update("status", status)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(context, "Booking " + status, Toast.LENGTH_SHORT).show();
-                    booking.setStatus(status); // Update the local object
-                    notifyDataSetChanged(); // Refresh the entire list
-                })
-                .addOnFailureListener(e -> Toast.makeText(context, "Failed to update booking: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
-
-    @Override
-    public int getItemCount() {
-        return bookings.size();
+                    if (listener != null) {
+                        listener.onBookingStatusChanged(booking, status);
+                    }
+                });
     }
 
     static class BookingViewHolder extends RecyclerView.ViewHolder {
-        TextView serviceName, timeSlot, userId, status;
+        TextView serviceName, timeSlot, userName, userEmail, status;
         Button acceptButton, declineButton;
 
         BookingViewHolder(View itemView) {
             super(itemView);
             serviceName = itemView.findViewById(R.id.serviceName);
             timeSlot = itemView.findViewById(R.id.timeSlot);
-            userId = itemView.findViewById(R.id.userId);
-            status = itemView.findViewById(R.id.status); // Add this line
+            userName = itemView.findViewById(R.id.userName);
+            userEmail = itemView.findViewById(R.id.userEmail);
+            status = itemView.findViewById(R.id.status);
             acceptButton = itemView.findViewById(R.id.acceptButton);
             declineButton = itemView.findViewById(R.id.declineButton);
         }
     }
 }
-

@@ -57,22 +57,28 @@ public class ServiceSelectionActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (firebaseUser != null) {
-                    // Create a new booking document with auto-generated ID
-                    DocumentReference newBookingRef = db.collection("bookings").document();
-                    String bookingId = newBookingRef.getId();
+                    db.collection("users").document(firebaseUser.getUid()).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                User user = documentSnapshot.toObject(User.class);
+                                if (user != null) {
+                                    DocumentReference newBookingRef = db.collection("bookings").document();
+                                    String bookingId = newBookingRef.getId();
 
-                    // Create a Booking object with only the service selected
-                    Booking booking = new Booking(bookingId, firebaseUser.getUid(), selectedService, null, null, null);
+                                    Booking booking = new Booking(bookingId, firebaseUser.getUid(), selectedService, null, "pending",
+                                            user.getFirstName(), user.getLastName(), user.getEmail());
 
-                    // Save the booking to Firestore
-                    newBookingRef.set(booking).addOnSuccessListener(aVoid -> {
-                        // Navigate to TimeSlotActivity with the Booking object
-                        Intent intent = new Intent(ServiceSelectionActivity.this, TimeSlotActivity.class);
-                        intent.putExtra("booking", booking);
-                        startActivity(intent);
-                    }).addOnFailureListener(e -> {
-                        Toast.makeText(ServiceSelectionActivity.this, "Failed to create booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                                    newBookingRef.set(booking).addOnSuccessListener(aVoid -> {
+                                        Intent intent = new Intent(ServiceSelectionActivity.this, TimeSlotActivity.class);
+                                        intent.putExtra("booking", booking);
+                                        startActivity(intent);
+                                    }).addOnFailureListener(e -> {
+                                        Toast.makeText(ServiceSelectionActivity.this, "Failed to create booking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(ServiceSelectionActivity.this, "Failed to fetch user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 }
             }
         });

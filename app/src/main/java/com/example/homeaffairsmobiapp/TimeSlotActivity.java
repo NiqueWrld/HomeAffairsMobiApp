@@ -10,12 +10,15 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class TimeSlotActivity extends AppCompatActivity {
 
     private Spinner timeSlotSpinner;
+    private TextView selectedServiceTextView;
+    private Button confirmButton;
     private Booking booking;
     private FirebaseFirestore db;
 
@@ -25,10 +28,16 @@ public class TimeSlotActivity extends AppCompatActivity {
         setContentView(R.layout.activity_time_slot2);
 
         timeSlotSpinner = findViewById(R.id.timeSlotSpinner);
+        selectedServiceTextView = findViewById(R.id.selectedServiceTextView);
+        confirmButton = findViewById(R.id.confirmButton);
         db = FirebaseFirestore.getInstance();
 
         // Retrieve the Booking object from the intent
         booking = (Booking) getIntent().getSerializableExtra("booking");
+
+        if (booking != null) {
+            selectedServiceTextView.setText("Selected Service: " + booking.getService());
+        }
 
         // Retrieve time slots from strings.xml
         String[] timeSlots = getResources().getStringArray(R.array.time_slots_array);
@@ -43,12 +52,7 @@ public class TimeSlotActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedTimeSlot = parent.getItemAtPosition(position).toString();
                 Toast.makeText(TimeSlotActivity.this, "Selected: " + selectedTimeSlot, Toast.LENGTH_SHORT).show();
-
-                // Update the Booking object with the selected time slot
                 booking.setTimeSlot(selectedTimeSlot);
-
-                // Update the booking in Firestore
-                updateBookingInFirestore(selectedTimeSlot);
             }
 
             @Override
@@ -56,12 +60,23 @@ public class TimeSlotActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
+
+        confirmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (booking.getTimeSlot() != null) {
+                    updateBookingInFirestore();
+                } else {
+                    Toast.makeText(TimeSlotActivity.this, "Please select a time slot", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
-    private void updateBookingInFirestore(String selectedTimeSlot) {
+    private void updateBookingInFirestore() {
         db.collection("bookings").document(booking.getBookingId())
                 .update(
-                        "timeSlot", selectedTimeSlot,
+                        "timeSlot", booking.getTimeSlot(),
                         "status", "pending"
                 )
                 .addOnSuccessListener(aVoid -> {
@@ -77,30 +92,29 @@ public class TimeSlotActivity extends AppCompatActivity {
 
         TextView serviceName = dialogView.findViewById(R.id.serviceName);
         TextView timeSlotText = dialogView.findViewById(R.id.timeSlotText);
-        TextView userIdText = dialogView.findViewById(R.id.userIdText);
+        TextView userNameText = dialogView.findViewById(R.id.userNameText);
+        TextView userEmailText = dialogView.findViewById(R.id.userEmailText);
 
         serviceName.setText("Service: " + booking.getService());
         timeSlotText.setText("Time Slot: " + booking.getTimeSlot());
-        userIdText.setText("User ID: " + booking.getUserId());
+        userNameText.setText("Name: " + booking.getFullName());
+        userEmailText.setText("Email: " + booking.getUserEmail());
 
         builder.setView(dialogView);
         builder.setTitle("Booking Details");
         builder.setPositiveButton("Confirm", (dialog, which) -> {
             dialog.dismiss();
-            // Send booking to admin dashboard
             sendBookingToAdminDashboard();
         });
         builder.show();
     }
 
     private void sendBookingToAdminDashboard() {
-        // Update the booking status to "pending" in Firestore
         db.collection("bookings").document(booking.getBookingId())
                 .update("status", "pending")
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(TimeSlotActivity.this, "Booking sent to admin for approval", Toast.LENGTH_SHORT).show();
-                    // Navigate back to the main activity or user dashboard
-                    Intent intent = new Intent(TimeSlotActivity.this, MainActivity.class);
+                    Intent intent = new Intent(TimeSlotActivity.this, UserActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     finish();
