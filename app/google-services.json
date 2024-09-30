@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "248620545578",
+    "project_id": "basic-buttress-428115-e3",
+    "storage_bucket": "basic-buttress-428115-e3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:248620545578:android:2d78800c42a1b37ead3553",
+        "android_client_info": {
+          "package_name": "com.example.homeaffairsmobiapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA74KAjr4TDXCL4lwi-p-6jGfjzFE73xF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

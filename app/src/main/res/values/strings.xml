@@ -1,0 +1,29 @@
+<resources>
+
+    <string-array name="theme_options">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string name="app_name">Home Affairs Mobi App</string>
+    <string-array name="services_array">
+        <item>Passport Renewal</item>
+        <item>ID Application</item>
+        <item>Citizenship Application</item>
+    </string-array>
+    <string-array name="time_slots_array">
+        <item>08:00 AM</item>
+        <item>09:00 AM</item>
+        <item>10:00 AM</item>
+        <item>11:00 AM</item>
+        <item>12:00 PM</item>
+        <item>01:00 PM</item>
+        <item>02:00 PM</item>
+        <item>03:00 PM</item>
+        <item>04:00 PM</item>
+    </string-array>
+
+</resources>
