@@ -16,7 +16,14 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class LoginActivity extends AppCompatActivity {
+public class
+
+
+LoginActivity extends AppCompatActivity {
+
+
+
+
 
     private FirebaseAuth mAuth;
     private EditText emailTextView, passwordTextView;

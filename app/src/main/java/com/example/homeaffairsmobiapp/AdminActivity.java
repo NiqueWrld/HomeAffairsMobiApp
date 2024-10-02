@@ -12,6 +12,8 @@ import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import android.net.Uri;
+
 
 public class AdminActivity extends AppCompatActivity implements BookingAdapter.OnBookingStatusChangeListener {
 
@@ -89,16 +91,16 @@ public class AdminActivity extends AppCompatActivity implements BookingAdapter.O
     public void onBookingStatusChanged(Booking booking, String newStatus) {
         if (newStatus.equals("accepted")) {
             sendConfirmationEmail(booking);
-            Intent intent = new Intent(AdminActivity.this, AcceptedBookingsActivity.class);
-            startActivity(intent);
         }
     }
 
     private void sendConfirmationEmail(Booking booking) {
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("message/rfc822");
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{booking.getUserEmail()});
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Booking Confirmation");
+        Intent selectorIntent = new Intent(Intent.ACTION_SENDTO);
+        selectorIntent.setData(Uri.parse("mailto:"));
+
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{booking.getUserEmail()});
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Booking Confirmation");
 
         String emailBody = "Dear " + booking.getFullName() + ",\n\n" +
                 "Your booking has been confirmed:\n" +
@@ -107,12 +109,17 @@ public class AdminActivity extends AppCompatActivity implements BookingAdapter.O
                 "Booking ID: " + booking.getBookingId() + "\n\n" +
                 "Thank you for using our service.";
 
-        intent.putExtra(Intent.EXTRA_TEXT, emailBody);
+        emailIntent.putExtra(Intent.EXTRA_TEXT, emailBody);
+        emailIntent.setSelector(selectorIntent);
 
         try {
-            startActivity(Intent.createChooser(intent, "Send mail..."));
+            startActivity(Intent.createChooser(emailIntent, "Send email..."));
+            // Redirect to AcceptedBookingsActivity after sending the email
+            Intent intent = new Intent(AdminActivity.this, AcceptedBookingsActivity.class);
+            startActivity(intent);
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(AdminActivity.this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }
     }
 }
+
