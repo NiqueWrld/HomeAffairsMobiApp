@@ -46,4 +46,6 @@ dependencies {
     implementation ("de.hdodenhof:circleimageview:3.1.0")
     implementation ("androidx.preference:preference:1.1.1")
     implementation ("com.firebaseui:firebase-ui-firestore:8.0.0")
+    implementation ("com.google.android.material:material:1.8.0")
+
 }
